@@ -8,7 +8,12 @@
 #ifndef UART_H_
 #define UART_H_
 
+#include "stm32f10x_dma.h"
+
 #define UART_FRAME_TERMINATOR	('\n')
+
+// WARNING: not implemented yet!
+// #define UART_DMA_Rx_Channel_IRQn	DMA1_Channel5_IRQn
 
 extern char uart_rx_buffer[];
 extern uint8_t uart_rx_flag;

@@ -78,8 +78,7 @@ void uart_tx(const char* msg) {
 #define USARTy_Rx_DMA_FLAG       DMA1_FLAG_TC5
 
 void uart_dma_rx(void* ptr, uint32_t size) {
-	RCC->AHBENR |= RCC_AHBPeriph_DMA1; //RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);
-	// Disable DMA before clearing interrupt flags
+	// Disable DMA channel before clearing interrupt flags
 	USARTy_Rx_DMA_Channel->CCR = 0;	// Control register
 	// Clear interrupts
 	DMA1->IFCR |= ((uint32_t)(DMA_ISR_GIF5 | DMA_ISR_TCIF5 | DMA_ISR_HTIF5 | DMA_ISR_TEIF5));	// Interrupt flag clear register
@@ -108,8 +107,6 @@ void uart_dma_rx_cleanup(void) {
 	USART1->CR3 &= (~USART_DMAReq_Rx);
 	// DMA_Cmd(USARTy_Rx_DMA_Channel, DISABLE);
 	USARTy_Rx_DMA_Channel->CCR = 0;
-	// RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, DISABLE);
-	RCC->AHBENR &= (~RCC_AHBPeriph_DMA1);
 }
 
 // --------------------------- Interrupt handlers
