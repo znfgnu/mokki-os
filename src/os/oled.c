@@ -14,37 +14,54 @@ oled_buffer_t lcd_buffers[2];
 oled_page_t* oled_buffer = &(lcd_buffers[0][0]);
 
 const uint8_t oled_start_sequence[] = {
-		0xAE, //display off
-		0x20, //Set Memory Addressing Mode
-		0x00, //00,Horizontal Addressing Mode,01,Vertical Addressing Mode;10,Page Addressing Mode (RESET);11,Invalid
-		0xB0, //Set Page Start Address for Page Addressing Mode,0-7
-		0xC8, //Set COM Output Scan Direction
-		0x00, //---set low column address
-		0x10, //---set high column address
-		0x40, //--set start line address
-		0x81, //--set contrast control register
-		0xFF,
-		0xA1, //--set segment re-map 0 to 127
-		0xA6, //--set normal display
-		0xA8, //--set multiplex ratio(1 to 64)
-		0x3F, //
-		0xA4, //0xa4,Output follows RAM content,0xa5,Output ignores RAM content
-		0xD3, //-set display offset
-		0x00, //-not offset
-		0xD5, //--set display clock divide ratio/oscillator frequency
-		0xF0, //--set divide ratio
-		0xD9, //--set pre-charge period
-		0x22, //
+		0xAE,	// Set display OFF
+
+		0x20,	// Set memory addressing mode:
+		0x00,	// Horizontal: 0x00, Vertical: 0x01, Page (default): 0x02
+
+		0x21,	// Set column address
+		0,		// start
+		127,	// end
+
+		0x22,	// Set page address
+		0,		// start
+		7,		// end
+
+		0xC8,	// Set COM Output Scan Direction (0xC0 - flipped vertical)
+
+		0x40,	// Set display start line to 0
+
+		0x81,	// Set contrast control register
+		0x7F,	// Value: 0-255
+
+		0xA1, 	// Set segment re-map 0 to 127 (0xA0 - flipped horizontal)
+
+		0xA6, 	// Set normal display (inverted colors: 0xA7)
+
+		0xA8,	// Set multiplex ratio
+		0x3F, 	// 15 (16MUX) to 63 (64MUX)
+
+		0xA4, 	// Output follows RAM content; 0xA5: Output ignores RAM content (all pixels lit up)
+
+		0xD3,	// Set display offset (vertical)
+		0x00,	// 0 to 63
+
+		0xD5,	// Set display clock divide ratio / oscillator frequency
+		0xF0,	// 4 MSB: oscillator frequency; 4 LSB: divide ratio of the display clocks
+
+		0xD9,	// Set pre-charge period
+		0x22,	// 4 MSB: Phase 2 period of up to 15 DCLK; 4 LSB: Phase 1 period of up to 15 DCLK
+
 		0xDA, //--set com pins hardware configuration
 		0x12,
+
 		0xDB, //--set vcomh
 		0x20, //0x20,0.77xVcc
-		0x8D, //--set DC-DC enable
-		0x14, //
-		0xAF, //--turn on SSD1306 panel
-		0xB0,
-		0x00,
-		0x10,
+
+		0x8D,	// Charge pump setting
+		0x14, 	// Enable: 0x14, Disable: 0x10
+
+		0xAF, 	// Display ON
 };
 
 uint8_t oled_transfer_in_progress = 0;
@@ -66,7 +83,10 @@ void oled_init(void) {
 	GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-	I2C_InitStruct.I2C_ClockSpeed = 400000;
+	RCC_APB1PeriphResetCmd(RCC_APB1Periph_I2C1, ENABLE);
+	RCC_APB1PeriphResetCmd(RCC_APB1Periph_I2C1, DISABLE);
+
+	I2C_InitStruct.I2C_ClockSpeed = 1200000;	// 400000;
 	I2C_InitStruct.I2C_Mode = I2C_Mode_I2C;
 	I2C_InitStruct.I2C_DutyCycle = I2C_DutyCycle_2;
 	I2C_InitStruct.I2C_OwnAddress1 = 0x00;			// don't care when master
@@ -90,7 +110,7 @@ void oled_dma_tx(const void* ptr, uint32_t size, uint8_t token) {
 	 * flag when complete.
 	 */
 
-	while(oled_transfer_in_progress);	// Wait until last transfer finishes.
+	while(oled_transfer_in_progress) __WFI();	// Wait until last transfer finishes.
 	oled_transfer_in_progress = 1;
 	oled_dma_data_ptr = ptr;
 	oled_dma_data_size = size;

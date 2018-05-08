@@ -30,20 +30,53 @@ int main(void)
 	oled_init();
 	oled_initialize_screen();
 
-	uint8_t x = 0xa5;
+	uint8_t x = 0xAA;
 	uint32_t cntr = 0;
+
+	uint8_t cols = 8;
+	uint8_t rows = 3;
 
 	while(1) {
 		oled_clear_buffer();
-		for(int i=0; i<8; ++i) {
-			for (int j=0; j<8; ++j) {
-				oled_buffer[i][8*i+j] = x;
+		uint8_t maxj = OLED_WIDTH / cols;
+		for (int page=0; page<8; ++page) {
+			for(int col=0; col<cols; ++col) {
+				for (int j=0; j<maxj; ++j) {
+					uint8_t gray = j&1 ? x : ~x;
+					uint8_t color = (col-page/(8/rows))&7;
+					switch (color){
+					// white
+					case 0:
+					case 4:
+						oled_buffer[page][col*maxj+j] = 0xff;
+						break;
+					// black
+					case 2:
+					case 6:
+						oled_buffer[page][col*maxj+j] = 0x00;
+						break;
+					// checked gray
+					case 1:
+						oled_buffer[page][col*maxj+j] = gray;
+						break;
+					// whole square alternate gray
+					case 3:
+						oled_buffer[page][col*maxj+j] = ((cntr)&1) ? 0xff : 0x00;
+						break;
+					// vertical stripes alternate
+					case 5:
+						oled_buffer[page][col*maxj+j] = ((cntr^j)&1) ? 0xff : 0x00;
+						break;
+					// horizontal stripes alternate
+					case 7:
+						oled_buffer[page][col*maxj+j] = x;//((cntr)&1) ? 0xff : 0x00;
+						break;
+					}
+				}
 			}
 		}
-		oled_buffer[7][127] = cntr++ / 100;
-		uint8_t column = cntr & 0x7f;
-		oled_buffer[3][column] = 0xff;
-		x^=0xff;
+		cntr++;
+		x=~x;
 		oled_update_screen();
 	}
 

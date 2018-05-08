@@ -33,5 +33,6 @@ oled_page_t *oled_buffer;
 void oled_init(void);
 void oled_initialize_screen(void);
 void oled_clear_buffer(void);
+void oled_update_screen(void);
 
 #endif /* OS_OLED_H_ */
