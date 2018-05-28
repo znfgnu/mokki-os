@@ -7,8 +7,8 @@
 
 #include "stm32f10x_rcc.h"
 
-#include "os/uart.h"
-#include "os/oled.h"
+#include "hw/uart.h"
+#include "hw/oled.h"
 
 void dma_init(void) {
 	RCC->AHBENR |= RCC_AHBPeriph_DMA1; // RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);

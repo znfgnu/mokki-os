@@ -6,7 +6,7 @@
  */
 
 #include "os/loader.h"
-#include "os/uart.h"
+#include "hw/uart.h"
 
 #include "examples/program.h"
 

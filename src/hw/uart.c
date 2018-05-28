@@ -7,7 +7,7 @@
 
 #include "stm32f10x.h"
 
-#include "os/uart.h"
+#include "hw/uart.h"
 
 char uart_rx_buffer[1024];
 static char* uart_rx_ptr = uart_rx_buffer;

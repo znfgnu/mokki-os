@@ -7,11 +7,11 @@
 
 #include "stm32f10x_i2c.h"
 #include "stm32f10x_dma.h"
-#include "os/oled.h"
+#include "hw/oled.h"
 
 // DOUBLE BUFFERING *.*
-oled_buffer_t lcd_buffers[2];
-oled_page_t* oled_buffer = &(lcd_buffers[0][0]);
+oled_buffer_t oled_buffers[2];
+oled_buffer_t *oled_buffer = &oled_buffers[0];
 
 const uint8_t oled_start_sequence[] = {
 		0xAE,	// Set display OFF
@@ -126,13 +126,13 @@ void oled_initialize_screen(void) {
 void oled_update_screen(void) {
 	oled_dma_tx(oled_buffer, 1024, OLED_DATA_TOKEN);
 	// Swap buffers.
-	oled_buffer = (oled_buffer == &lcd_buffers[0][0]) ? &lcd_buffers[1][0] : &lcd_buffers[0][0];
+	oled_buffer = (oled_buffer == &oled_buffers[0]) ? &oled_buffers[1] : &oled_buffers[0];
 }
 
 void oled_clear_buffer(void) {
 	for (int i = 0; i < OLED_PAGES; ++i) {
 		for (int j = 0; j < OLED_WIDTH; ++j) {
-			oled_buffer[i][j] = 0x00;
+			*oled_buffer[i][j] = 0x00;
 		}
 	}
 }
