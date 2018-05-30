@@ -267,14 +267,14 @@ const font_character_t font_default[FONT_NO_CHARACTERS] = {
 	{ 0x00, 0x00, 0x00, 0x00, 0x00 }
 };
 
-void font_print_char(int c, int line, int col, oled_buffer_t *buf) {
+void font_print_char(int c, int line, int col, oled_page_t *buf) {
 	for (int i = 0; i < FONT_WIDTH; i++) {
-		*buf[line][col++] = font_default[c][i];
+		buf[line][col++] = font_default[c][i];
 	}
-	*buf[line][col] = 0x00;
+	buf[line][col] = 0x00;
 }
 
-void font_print_string(const char* str, int line, int col, oled_buffer_t *buf) {
+void font_print_string(const char* str, int line, int col, oled_page_t *buf) {
 	while (*str) {
 		font_print_char(*str, line, col, buf);
 		col += FONT_WIDTH_TOTAL;

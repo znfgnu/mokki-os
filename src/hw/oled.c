@@ -11,7 +11,7 @@
 
 // DOUBLE BUFFERING *.*
 oled_buffer_t oled_buffers[2];
-oled_buffer_t *oled_buffer = &oled_buffers[0];
+oled_page_t *oled_buffer = oled_buffers[0];
 
 const uint8_t oled_start_sequence[] = {
 		0xAE,	// Set display OFF
@@ -32,7 +32,7 @@ const uint8_t oled_start_sequence[] = {
 		0x40,	// Set display start line to 0
 
 		0x81,	// Set contrast control register
-		0x7F,	// Value: 0-255
+		0x7f,	// Value: 0-255
 
 		0xA1, 	// Set segment re-map 0 to 127 (0xA0 - flipped horizontal)
 
@@ -126,13 +126,13 @@ void oled_initialize_screen(void) {
 void oled_update_screen(void) {
 	oled_dma_tx(oled_buffer, 1024, OLED_DATA_TOKEN);
 	// Swap buffers.
-	oled_buffer = (oled_buffer == &oled_buffers[0]) ? &oled_buffers[1] : &oled_buffers[0];
+	oled_buffer = (oled_buffer == oled_buffers[0]) ? oled_buffers[1] : oled_buffers[0];
 }
 
 void oled_clear_buffer(void) {
 	for (int i = 0; i < OLED_PAGES; ++i) {
 		for (int j = 0; j < OLED_WIDTH; ++j) {
-			*oled_buffer[i][j] = 0x00;
+			oled_buffer[i][j] = 0x00;
 		}
 	}
 }
@@ -149,8 +149,8 @@ void I2C1_EV_IRQHandler(void) {
 		break;
 	case I2C_EVENT_MASTER_BYTE_TRANSMITTED:
 		if (oled_dma_token == OLED_TOKEN_TC_FLAG) {
-			I2C_GenerateSTOP(I2C1, ENABLE);
 			I2C_ITConfig(I2C1, I2C_IT_EVT, DISABLE);
+			I2C_GenerateSTOP(I2C1, ENABLE);
 			oled_transfer_in_progress = 0;
 		}
 		else {
