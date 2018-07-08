@@ -12,14 +12,13 @@ void led_init(void) {
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
 	GPIO_InitTypeDef GPIO_InitStruct;
 	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
-	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_1;
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_8;
 	GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_Init(GPIOA, &GPIO_InitStruct);
-	GPIO_ResetBits(GPIOA, GPIO_Pin_1);
+	GPIO_ResetBits(GPIOA, GPIO_Pin_8);
 }
 
 void led_set(uint32_t led_id, uint32_t state) {
 	// Ignores led_id for now
-	state = state ? GPIO_Pin_1 : (GPIO_Pin_1 << 16);
-	GPIOA->BSRR = state;
+	GPIOA->BSRR = state ? GPIO_Pin_8 : (GPIO_Pin_8 << 16);
 }

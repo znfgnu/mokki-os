@@ -1,5 +1,5 @@
 #include "stm32f10x.h"
-#include "examples/program.h"
+#include "os/program.h"
 
 uint16_t program_data[PROGRAM_MAX_SIZE] = {
 		// Program code

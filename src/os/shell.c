@@ -5,10 +5,9 @@
  *      Author: konrad
  */
 
+#include <hw/debug.h>
 #include "os/loader.h"
-#include "hw/uart.h"
-
-#include "examples/program.h"
+#include "os/program.h"
 
 static const char* string_ok = "OK.";
 static const char* string_ready = "Ready.";
@@ -40,7 +39,7 @@ void shell_parse(const char* msg) {
 	if (cmd == 'i') {
 		// init function table
 		loader_init_fntable((program_struct_t*) program_data);
-		uart_tx(string_ok);
+		debug_tx(string_ok);
 	}
 	else if (cmd == 'r') {
 		// run program
@@ -53,20 +52,20 @@ void shell_parse(const char* msg) {
 		response[13] = '0' + ret/100;
 		response[14] = '0' + (ret/10)%10;
 		response[15] = '0' + ret%10;
-		uart_tx(response);
-		uart_tx(string_ok);
+		debug_tx(response);
+		debug_tx(string_ok);
 	}
 	else if (cmd == 'l') {
 		int arg = shell_get_arg_int(&msg);
 		if (arg > PROGRAM_MAX_SIZE) {
-			uart_tx(string_error);
+			debug_tx(string_error);
 			return;
 		}
-		uart_dma_rx(program_data, arg);
-		uart_tx(string_ready);
+		debug_dma_rx(program_data, arg);
+		debug_tx(string_ready);
 		// Wait for transfer complete
 		while(!DMA_GetFlagStatus(DMA1_FLAG_TC5));
-		uart_dma_rx_cleanup();
-		uart_tx(string_ok);
+		debug_dma_rx_cleanup();
+		debug_tx(string_ok);
 	}
 }

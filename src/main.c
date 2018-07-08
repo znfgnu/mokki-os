@@ -9,120 +9,88 @@
 */
 
 
+#include <hw/debug.h>
 #include "stm32f10x.h"
+
+#include "hw/btn.h"
+#include "hw/debug.h"
+#include "hw/dma.h"
+#include "hw/led.h"
+#include "hw/oled.h"
+#include "hw/time.h"
 
 #include "os/api.h"
 #include "os/loader.h"
 #include "os/program_struct.h"
+#include "os/program.h"
 #include "os/shell.h"
-#include "os/dma.h"
-#include "hw/uart.h"
-#include "hw/oled.h"
-#include "hw/time.h"
-#include "gfx/font.h"
-#include "gfx/test.h"
 
-#include "examples/program.h"
+uint8_t pattern[3][3] = {
+		{1, 0, 0},
+		{0, 1, 0},
+		{0, 0, 1},
+};
+
+//uint8_t pattern2[2][3] = {
+//		{0b10010010, 0b01001001, 0b00100100},
+//		{0b01101101, 0b10110110, 0b11011011},
+//};
+
+uint8_t pattern2[2][3] = {
+		{0b00100100, 0b01001001, 0b10010010},
+		{0b11011011, 0b10110110, 0b01101101},
+};
+
 
 int main(void)
 {
+	// Hardware init
+	btn_init();
+	debug_init();
 	dma_init();
-	uart_init();
-	api_init();
-	shell_init();
+	led_init();
 	oled_init();
-	oled_initialize_screen();
 	time_init();
 
-//	gfx_test();
+	// System init
+	api_init();
+	shell_init();
 
-//	uart_tx("Mokki development board");
-//	uart_tx("Version: 0.0.1a");
+	// Post-init init
+	oled_initialize_screen();
 
 	uint32_t cntr = 0;
 
-//	gfx_test();
-
 	while(1) {
+		led_set(0, (cntr / 70) & 1);
+
 		for (int l=0; l<8; ++l) {
 			for (int c=0; c<128; ++c) {
-				if (((l+c/8)&3) == 0) {	// black
-					oled_buffer[l][c] = 0x00;
-				} else if (((l+c/8)&3) == 1) {	// gray dark
-//					uint8_t res = (c+cntr)%4;
-//					switch(res) {
-//					case 3:
-//						res = 0x49;	// 3 bits
-//						break;
-//					case 1:
-//						res = 0x92;	// 3 bits
-//						break;
-//					case 0:
-//					case 2:
-//						res = 0x24;	// 2 bits - darker
-//						break;
-//					}
-					uint8_t res = c<64 ? (cntr+c)%3 : (cntr-c)%3;
-					switch(res) {
-					case 0:
-					case 4:
-						res = 0xAA;//c&1 ? 0xAA : 0x55;
-						break;
-					case 1:
-					case 3:
-						res = 0x55;//c&1 ? 0x55 : 0xAA;
-						break;
-					case 2:
-					case 5:
-						res = 0x00;
-						break;
-					}
-
-					oled_buffer[l][c] = res;//(((c+cntr)%3) == 0) ? 0xff : 0x00;
-				} else if (((l+c/8)&3) == 2) {	// gray light
-//					uint8_t res = (c+cntr)%4;
-//					switch(res) {
-//					case 3:
-//						res = 0xb6; // 3 bits off
-//						break;
-//					case 1:
-//						res = 0x6d;	// 3 bits off
-//						break;
-//					case 0:
-//					case 2:
-//						res = 0xdb; // 2 bits off - brighter
-//						break;
-//					}
-					uint8_t res = c<64 ? (cntr+c)%3 : (cntr-c)%3;
-					switch(res) {
-					case 0:
-					case 4:
-						res = 0xAA;//c&1 ? 0xAA : 0x55;
-						break;
-					case 1:
-					case 3:
-						res = 0x55;//c&1 ? 0x55 : 0xAA;
-						break;
-					case 2:
-					case 5:
-						res = 0xff;
-						break;
-					}
-
-					oled_buffer[l][c] = res;//(((c+cntr)%3) != 0) ? 0xff : 0x00;
+				if (((l/2+c/16)&3) == 0) {	// black
+					oled_buffer_tx[l][c] = 0x00;
+				} else if (((l/2+c/16)&3) == 1) {	// gray dark
+					uint8_t res = pattern2[0][(cntr+c+l)%3];
+					oled_buffer_tx[l][c] = res;//(((c+cntr)%3) == 0) ? 0xff : 0x00;
+				} else if (((l/2+c/16)&3) == 2) {	// gray light
+					uint8_t res = pattern2[1][(cntr+c+l)%3];
+					oled_buffer_tx[l][c] = res;//(((c+cntr)%3) != 0) ? 0xff : 0x00;
 				} else {	// white
-					oled_buffer[l][c] = 0xff;//0xff;
+					oled_buffer_tx[l][c] = 0xff;//0xff;
 				}
 			}
 		}
-//		cntr = (cntr + 1 == 3) ? 0 : (cntr + 1);
+
+		uint8_t btn_state = 0;
+		for (int i=0; i<8; ++i) {
+			btn_state |= btn_get(i) << i;
+		}
+
+		for (int i=0; i<8; ++i) {
+			oled_buffer_tx[0][i] = btn_state;
+		}
+
 		++cntr;
-//		oled_dma_tx(freeze, 1, OLED_CMD_TOKEN);
 		oled_update_screen();
-//		oled_dma_tx(unfreeze, 1, OLED_CMD_TOKEN);
-//		while (!uart_rx_flag);
-//		shell_parse(uart_rx_buffer);
-//		uart_rx_flag = 0;
 	}
 
 	for(;;);

@@ -5,13 +5,13 @@
  *      Author: konrad
  */
 
+#include <hw/debug.h>
 #include "stm32f10x_rcc.h"
 
-#include "hw/uart.h"
 #include "hw/oled.h"
 
 void dma_init(void) {
-	RCC->AHBENR |= RCC_AHBPeriph_DMA1; // RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);
+	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);
 
 	// Enable interrupts
 	NVIC_InitTypeDef NVIC_InitStructure;

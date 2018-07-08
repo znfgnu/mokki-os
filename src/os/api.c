@@ -16,6 +16,4 @@ const void* api_fn_pointers[] = {
 };
 
 void api_init(void) {
-	led_init();
-	btn_init();
 }
