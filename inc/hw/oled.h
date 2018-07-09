@@ -28,11 +28,11 @@
 
 typedef uint8_t oled_page_t[OLED_WIDTH];
 typedef oled_page_t oled_buffer_t[OLED_PAGES];
-extern oled_page_t *oled_buffer_tx;
+
+extern oled_buffer_t oled_triple_buffer[3];
 
 void oled_init(void);
 void oled_initialize_screen(void);
-void oled_clear_buffer(void);
-void oled_update_screen(void);
+void oled_start_screen_transmission(void);
 
 #endif /* OS_OLED_H_ */

@@ -9,9 +9,7 @@
 #include "stm32f10x_dma.h"
 #include "hw/oled.h"
 
-// DOUBLE BUFFERING *.*
-oled_buffer_t oled_buffers[2];
-oled_page_t *oled_buffer_tx = oled_buffers[0];
+oled_buffer_t oled_triple_buffer[3];
 
 const uint8_t oled_start_sequence[] = {
 		0xAE,	// Set display OFF
@@ -69,6 +67,8 @@ const uint8_t oled_start_sequence[] = {
 uint8_t oled_transfer_in_progress = 0;
 void* oled_dma_data_ptr;
 uint32_t oled_dma_data_size;
+uint8_t oled_dma_circular = 0;
+
 uint8_t oled_dma_token;
 uint8_t oled_dma_tc;
 
@@ -105,7 +105,7 @@ void oled_init(void) {
 }
 
 
-void oled_dma_tx(const void* ptr, uint32_t size, uint8_t token) {
+void oled_dma_tx(const void* ptr, uint32_t size, uint8_t token, uint8_t circular) {
 	/*
 	 * Interrupt driven. Only set variables and generate start bit.
 	 * Interrupts will do the work and reset oled_transfer_in_progress
@@ -117,27 +117,32 @@ void oled_dma_tx(const void* ptr, uint32_t size, uint8_t token) {
 	oled_dma_data_ptr = ptr;
 	oled_dma_data_size = size;
 	oled_dma_token = token;
+	oled_dma_circular = circular;
 	I2C_ITConfig(I2C1, I2C_IT_EVT, ENABLE);
 	I2C_GenerateSTART(I2C1, ENABLE);
 }
 
 void oled_initialize_screen(void) {
-	oled_dma_tx(oled_start_sequence, sizeof(oled_start_sequence), OLED_CMD_TOKEN);
+	oled_dma_tx(oled_start_sequence, sizeof(oled_start_sequence), OLED_CMD_TOKEN, 0);
 }
 
-void oled_update_screen(void) {
-	oled_dma_tx(oled_buffer_tx, 1024, OLED_DATA_TOKEN);
-	// Swap buffers.
-	oled_buffer_tx = (oled_buffer_tx == oled_buffers[0]) ? oled_buffers[1] : oled_buffers[0];
+void oled_start_screen_transmission(void) {
+	oled_dma_tx(oled_triple_buffer, 3 * sizeof(oled_buffer_t), OLED_DATA_TOKEN, 1);
 }
 
-void oled_clear_buffer(void) {
-	for (int i = 0; i < OLED_PAGES; ++i) {
-		for (int j = 0; j < OLED_WIDTH; ++j) {
-			oled_buffer_tx[i][j] = 0x00;
-		}
-	}
-}
+//void oled_update_screen(void) {
+//	oled_dma_tx(oled_buffer_tx, 1024, OLED_DATA_TOKEN);
+//	// Swap buffers.
+//	oled_buffer_tx = (oled_buffer_tx == oled_buffers[0]) ? oled_buffers[1] : oled_buffers[0];
+//}
+
+//void oled_clear_buffer(void) {
+//	for (int i = 0; i < OLED_PAGES; ++i) {
+//		for (int j = 0; j < OLED_WIDTH; ++j) {
+//			oled_buffer_tx[i][j] = 0x00;
+//		}
+//	}
+//}
 
 // Interrupt handlers
 
@@ -165,13 +170,13 @@ void I2C1_EV_IRQHandler(void) {
 			// Init DMA
 			OLED_DMA_Channel->CCR = \
 					DMA_DIR_PeripheralDST | \
-					DMA_Mode_Normal | \
 					DMA_PeripheralInc_Disable | \
 					DMA_MemoryInc_Enable | \
 					DMA_PeripheralDataSize_Byte | \
 					DMA_MemoryDataSize_Byte | \
 					DMA_Priority_VeryHigh | \
 					DMA_M2M_Disable;
+			OLED_DMA_Channel->CCR |= oled_dma_circular ? DMA_Mode_Circular : DMA_Mode_Normal;
 			OLED_DMA_Channel->CMAR = (uint32_t) oled_dma_data_ptr;	// Memory address
 			OLED_DMA_Channel->CPAR = (uint32_t) &(I2C1->DR);	// Peripheral address
 			OLED_DMA_Channel->CNDTR = oled_dma_data_size;		// Remaining bytes
@@ -189,10 +194,12 @@ void I2C1_EV_IRQHandler(void) {
 void DMA1_Channel6_IRQHandler(void) {
 	if (DMA_GetITStatus(DMA1_IT_TC6)) {
 		DMA_ClearITPendingBit(DMA1_IT_TC6);
-		oled_dma_token = OLED_TOKEN_TC_FLAG;
-		I2C_ITConfig(I2C1, I2C_IT_EVT, ENABLE);
-		DMA_ITConfig(OLED_DMA_Channel, DMA_IT_TC, DISABLE);
-		DMA_Cmd(OLED_DMA_Channel, DISABLE);
-		I2C_DMACmd(I2C1, DISABLE);
+		if (!oled_dma_circular) {
+			oled_dma_token = OLED_TOKEN_TC_FLAG;
+			I2C_ITConfig(I2C1, I2C_IT_EVT, ENABLE);
+			DMA_ITConfig(OLED_DMA_Channel, DMA_IT_TC, DISABLE);
+			DMA_Cmd(OLED_DMA_Channel, DISABLE);
+			I2C_DMACmd(I2C1, DISABLE);
+		}
 	}
 }
