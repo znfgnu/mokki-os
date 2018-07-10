@@ -8,20 +8,14 @@
 #include "gfx/gfx.h"
 #include "gfx/gfx_lut.h"
 
-void gfx_set_pixel(int line, int column, int color) {
-	int page = line >> 3;
-	line &= 0b111;	// modulo 8
-	line <<= 1;
-	gfx_buffer[page][column] &= (~(0b11 << line));	// Erase pixel
-	gfx_buffer[page][column] |= (color << line);	// Set pixel color
-}
+uint16_t gfx_buffer[OLED_PAGES][OLED_WIDTH];
+uint32_t gfx_clear_color = 0x00000000;
 
-void gfx_clear_buffer(void) {
-	// TODO Can work quicker (zeroing using uint32_t)
-	for (int p=0; p<OLED_PAGES; ++p) {
-		for (int c=0; c<OLED_WIDTH; ++c) {
-			gfx_buffer[p][c] = 0x0000;
-		}
+void gfx_clear(void) {
+	// Using 32-bit pointers to make it faster
+	register uint32_t *end = &(gfx_buffer[OLED_PAGES][OLED_WIDTH]);
+	for (uint32_t* p = (uint32_t*) &gfx_buffer; p < end; ++p) {
+		*p = gfx_clear_color;
 	}
 }
 
@@ -43,7 +37,7 @@ void gfx_update(void) {
 //				}
 //			}
 			for (int i=0; i<3; ++i) {
-				uint8_t res = 0;
+				register uint8_t res = 0;
 
 				res |= gfx_lut[(i+c-p+9)%3][gfx_buffer[p][c]&0xFF];
 				res |= gfx_lut[(i+1+c-p+9)%3][(gfx_buffer[p][c]>>8)&0xFF] << 4;
@@ -51,4 +45,29 @@ void gfx_update(void) {
 			}
 		}
 	}
+}
+
+void gfx_set_clear_color(int color) {
+	switch (color) {
+	case COLOR_WHITE:
+		gfx_clear_color = 0xFFFFFFFF;
+		break;
+	case COLOR_LIGHTGRAY:
+		gfx_clear_color = 0xAAAAAAAA;
+		break;
+	case COLOR_DARKGRAY:
+		gfx_clear_color = 0x55555555;
+		break;
+	default:
+		gfx_clear_color = 0x00000000;
+		break;
+	}
+}
+
+void gfx_set_pixel(int line, int column, int color) {
+	int page = line >> 3;
+	line &= 0b111;	// modulo 8
+	line <<= 1;
+	gfx_buffer[page][column] &= (~(0b11 << line));	// Erase pixel
+	gfx_buffer[page][column] |= (color << line);	// Set pixel color
 }

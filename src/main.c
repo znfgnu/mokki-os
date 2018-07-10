@@ -44,9 +44,13 @@ uint8_t pattern2[2][3] = {
 };
 
 
+extern const uint16_t dragon[8][64];
+extern const uint16_t dragon2[8][64];
+
 int main(void)
 {
 	// Hardware init
+	clock_init();
 	btn_init();
 	debug_init();
 	dma_init();
@@ -62,24 +66,6 @@ int main(void)
 	oled_initialize_screen();
 	oled_start_screen_transmission();
 
-	for(int cntr=0; cntr<3; ++cntr) {
-		for (int l=0; l<8; ++l) {
-			for (int c=0; c<128; ++c) {
-				if (((l/2+c/16)&3) == 0) {	// black
-					oled_triple_buffer[cntr][l][c] = 0x00;
-				} else if (((l/2+c/16)&3) == 1) {	// gray dark
-					uint8_t res = pattern2[0][(cntr+c-l+12)%3];
-					oled_triple_buffer[cntr][l][c] = res;//(((c+cntr)%3) == 0) ? 0xff : 0x00;
-				} else if (((l/2+c/16)&3) == 2) {	// gray light
-					uint8_t res = pattern2[1][(cntr+c-l+12)%3];
-					oled_triple_buffer[cntr][l][c] = res;//(((c+cntr)%3) != 0) ? 0xff : 0x00;
-				} else {	// white
-					oled_triple_buffer[cntr][l][c] = 0xff;//0xff;
-				}
-			}
-		}
-	}
-
 	int cntr = 0;
 
 	int xx[4] = {20, 30, 87, 103};
@@ -87,37 +73,51 @@ int main(void)
 	int dx[4] = {-2, -1, 2, 1};
 	int dy[4] = {-2, 2, 1, -1};
 
+	int dragonx = 0;
+	int dragondx = 1;
+
 	while(1) {
 		led_set(0, (cntr / 30) & 1);
 
-		gfx_clear_buffer();
-
-
 		if (btn_get(1)) {
-			for (int l = 0; l<64; ++l) {
-				for (int c = 0; c<128; ++c) {
-					gfx_set_pixel(l, c, COLOR_WHITE);
-				}
-			}
+			gfx_set_clear_color(COLOR_WHITE);
 		} else if (btn_get(2)) {
-			for (int l = 0; l<64; ++l) {
-				for (int c = 0; c<128; ++c) {
-					gfx_set_pixel(l, c, COLOR_LIGHTGRAY);
-				}
-			}
+			gfx_set_clear_color(COLOR_LIGHTGRAY);
 		} else if (btn_get(3)) {
-			for (int l = 0; l<64; ++l) {
-				for (int c = 0; c<128; ++c) {
-					gfx_set_pixel(l, c, COLOR_DARKGRAY);
-				}
-			}
+			gfx_set_clear_color(COLOR_DARKGRAY);
 		} else if (btn_get(4)) {
-			for (int l = 0; l<64; ++l) {
-				for (int c = 0; c<128; ++c) {
-					gfx_set_pixel(l, c, COLOR_BLACK);
+			gfx_set_clear_color(COLOR_BLACK);
+		}
+
+		gfx_clear();
+
+		int d1 = btn_get(5);
+		int d2 = btn_get(6);
+
+		if (d1 || d2) {
+			// Blit moving dragon
+			if (d1) {
+				for (int p = 0; p<8; ++p) {
+					for (int c = 0; c<64; ++c) {
+						gfx_buffer[p][c+dragonx] = dragon[p][c];
+					}
+				}
+			} else if (d2) {
+				for (int p = 0; p<8; ++p) {
+					for (int c = 0; c<64; ++c) {
+						gfx_buffer[p][c+dragonx] = dragon2[p][c];
+					}
 				}
 			}
-		} else {
+
+			if (btn_get(7)) {
+				dragonx += dragondx;
+				if (dragonx >= 64 || dragonx < 0) {
+					dragondx = -dragondx;
+					dragonx += 2 * dragondx;
+				}
+			}
+		} else if (!btn_get(0)) {
 			for (int i=0; i<4; ++i) {
 				xx[i] += dx[i];
 				if (xx[i] >= OLED_WIDTH-1 || xx[i] < 1) {
@@ -140,10 +140,7 @@ int main(void)
 				gfx_set_pixel(yy[i]+1, xx[i]+1, i);
 			}
 
-
-
-
-
+			// Lines
 			for (int i=0; i<64; ++i) {
 				gfx_set_pixel(i, i, COLOR_WHITE);
 				gfx_set_pixel(i, i+1, COLOR_WHITE);
@@ -161,18 +158,6 @@ int main(void)
 				gfx_set_pixel(i, i+13, COLOR_WHITE);
 			}
 		}
-
-
-
-
-//		uint8_t btn_state = 0;
-//		for (int i=0; i<8; ++i) {
-//			btn_state |= btn_get(i) << i;
-//		}
-//
-//		for (int i=0; i<8; ++i) {
-//			oled_triple_buffer[0][0][i] = btn_state;
-//		}
 
 		++cntr;
 		gfx_update();
