@@ -117,45 +117,51 @@ int main(void)
 					dragonx += 2 * dragondx;
 				}
 			}
-		} else if (!btn_get(0)) {
-			for (int i=0; i<4; ++i) {
-				xx[i] += dx[i];
-				if (xx[i] >= OLED_WIDTH-1 || xx[i] < 1) {
-					dx[i] = -dx[i];
-					xx[i] += dx[i] * 2;
+		} else {
+			if (!btn_get(0)) {
+				for (int i=0; i<4; ++i) {
+					xx[i] += dx[i];
+					if (xx[i] >= OLED_WIDTH-1 || xx[i] < 1) {
+						dx[i] = -dx[i];
+						xx[i] += dx[i] * 2;
+					}
+					yy[i] += dy[i];
+					if (yy[i] >= OLED_HEIGHT-1 || yy[i] < 1) {
+						dy[i] = -dy[i];
+						yy[i] += dy[i] * 2;
+					}
+					gfx_set_pixel(xx[i]-1, yy[i]-1, i);
+					gfx_set_pixel(xx[i]-1, yy[i], i);
+					gfx_set_pixel(xx[i]-1, yy[i]+1, i);
+					gfx_set_pixel(xx[i], yy[i]-1, i);
+					gfx_set_pixel(xx[i], yy[i], i);
+					gfx_set_pixel(xx[i], yy[i]+1, i);
+					gfx_set_pixel(xx[i]+1, yy[i]-1, i);
+					gfx_set_pixel(xx[i]+1, yy[i], i);
+					gfx_set_pixel(xx[i]+1, yy[i]+1, i);
 				}
-				yy[i] += dy[i];
-				if (yy[i] >= OLED_HEIGHT-1 || yy[i] < 1) {
-					dy[i] = -dy[i];
-					yy[i] += dy[i] * 2;
+
+				// Lines
+				for (int i=0; i<64; ++i) {
+					gfx_set_pixel(i, i, COLOR_WHITE);
+					gfx_set_pixel(i, i+1, COLOR_WHITE);
+					gfx_set_pixel(i, i+2, COLOR_BLACK);
+					gfx_set_pixel(i, i+3, COLOR_BLACK);
+					gfx_set_pixel(i, i+4, COLOR_WHITE);
+					gfx_set_pixel(i, i+5, COLOR_WHITE);
+					gfx_set_pixel(i, i+6, COLOR_DARKGRAY);
+					gfx_set_pixel(i, i+7, COLOR_DARKGRAY);
+					gfx_set_pixel(i, i+8, COLOR_WHITE);
+					gfx_set_pixel(i, i+9, COLOR_WHITE);
+					gfx_set_pixel(i, i+10, COLOR_LIGHTGRAY);
+					gfx_set_pixel(i, i+11, COLOR_LIGHTGRAY);
+					gfx_set_pixel(i, i+12, COLOR_WHITE);
+					gfx_set_pixel(i, i+13, COLOR_WHITE);
 				}
-				gfx_set_pixel(yy[i]-1, xx[i]-1, i);
-				gfx_set_pixel(yy[i]-1, xx[i], i);
-				gfx_set_pixel(yy[i]-1, xx[i]+1, i);
-				gfx_set_pixel(yy[i], xx[i]-1, i);
-				gfx_set_pixel(yy[i], xx[i], i);
-				gfx_set_pixel(yy[i], xx[i]+1, i);
-				gfx_set_pixel(yy[i]+1, xx[i]-1, i);
-				gfx_set_pixel(yy[i]+1, xx[i], i);
-				gfx_set_pixel(yy[i]+1, xx[i]+1, i);
 			}
 
-			// Lines
-			for (int i=0; i<64; ++i) {
-				gfx_set_pixel(i, i, COLOR_WHITE);
-				gfx_set_pixel(i, i+1, COLOR_WHITE);
-				gfx_set_pixel(i, i+2, COLOR_BLACK);
-				gfx_set_pixel(i, i+3, COLOR_BLACK);
-				gfx_set_pixel(i, i+4, COLOR_WHITE);
-				gfx_set_pixel(i, i+5, COLOR_WHITE);
-				gfx_set_pixel(i, i+6, COLOR_DARKGRAY);
-				gfx_set_pixel(i, i+7, COLOR_DARKGRAY);
-				gfx_set_pixel(i, i+8, COLOR_WHITE);
-				gfx_set_pixel(i, i+9, COLOR_WHITE);
-				gfx_set_pixel(i, i+10, COLOR_LIGHTGRAY);
-				gfx_set_pixel(i, i+11, COLOR_LIGHTGRAY);
-				gfx_set_pixel(i, i+12, COLOR_WHITE);
-				gfx_set_pixel(i, i+13, COLOR_WHITE);
+			if (btn_get(7)) {
+				font_print_string(10, 28, "Hello, World!", COLOR_WHITE);
 			}
 		}
 

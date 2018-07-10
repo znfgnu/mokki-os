@@ -28,6 +28,6 @@ extern uint32_t gfx_clear_color;
 void gfx_clear(void);
 void gfx_update(void);
 void gfx_set_clear_color(int color);
-void gfx_set_pixel(int line, int column, int color);
+void gfx_set_pixel(int x, int y, int color);
 
 #endif /* GFX_GFX_H_ */

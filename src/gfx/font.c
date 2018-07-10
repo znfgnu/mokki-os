@@ -5,8 +5,8 @@
  *      Author: konrad
  */
 
-#include "hw/oled.h"
 #include "gfx/font.h"
+#include "gfx/gfx.h"
 
 const font_character_t font_default[FONT_NO_CHARACTERS] = {
 	{ 0x00, 0x00, 0x00, 0x00, 0x00 },  // 0
@@ -267,17 +267,22 @@ const font_character_t font_default[FONT_NO_CHARACTERS] = {
 	{ 0x00, 0x00, 0x00, 0x00, 0x00 }
 };
 
-void font_print_char(int c, int line, int col, oled_page_t *buf) {
+void font_blit_char(int x, int y, char c, int color) {
+	// TODO Lookup table needed (to double bits)
+
 	for (int i = 0; i < FONT_WIDTH; i++) {
-		buf[line][col++] = font_default[c][i];
+		for (int b = 0; b < 8; ++b) {
+			if (font_default[c][i] & (1 << b)) {
+				gfx_set_pixel(x+i, y+b, color);
+			}
+		}
 	}
-	buf[line][col] = 0x00;
 }
 
-void font_print_string(const char* str, int line, int col, oled_page_t *buf) {
+void font_print_string(int x, int y, const char* str, int color) {
 	while (*str) {
-		font_print_char(*str, line, col, buf);
-		col += FONT_WIDTH_TOTAL;
+		font_blit_char(x, y, *str, color);
+		x += FONT_WIDTH_TOTAL;
 		str++;
 	}
 }
