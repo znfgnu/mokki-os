@@ -29,7 +29,10 @@
 typedef uint8_t oled_page_t[OLED_WIDTH];
 typedef oled_page_t oled_buffer_t[OLED_PAGES];
 
-extern oled_buffer_t oled_triple_buffer[3];
+extern oled_buffer_t oled_triple_buffer[2][3];
+extern volatile uint8_t oled_free_buffer;
+extern volatile uint8_t oled_request_flip;
+
 
 void oled_init(void);
 void oled_initialize_screen(void);

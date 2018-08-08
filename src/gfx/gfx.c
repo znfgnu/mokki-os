@@ -20,16 +20,18 @@ void gfx_clear(void) {
 }
 
 void gfx_update(void) {
+	while(oled_request_flip);
 	for (int p=0; p<OLED_PAGES; ++p) {
 		for (int c=0; c<OLED_WIDTH; ++c) {
 			for (int i=0; i<3; ++i) {
 				register uint8_t res = 0;
 				res |= gfx_lut[(i+c-p+9)%3][gfx_buffer[p][c]&0xFF];
 				res |= gfx_lut[(i+1+c-p+9)%3][(gfx_buffer[p][c]>>8)&0xFF] << 4;
-				oled_triple_buffer[i][p][c] = res;
+				oled_triple_buffer[oled_free_buffer][i][p][c] = res;
 			}
 		}
 	}
+	oled_request_flip = 1;
 }
 
 void gfx_set_clear_color(int color) {

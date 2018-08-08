@@ -9,7 +9,7 @@
 #include "stm32f10x_dma.h"
 #include "hw/oled.h"
 
-oled_buffer_t oled_triple_buffer[3];
+oled_buffer_t oled_triple_buffer[2][3];
 
 const uint8_t oled_start_sequence[] = {
 		0xAE,	// Set display OFF
@@ -30,8 +30,9 @@ const uint8_t oled_start_sequence[] = {
 		0x40,	// Set display start line to 0
 
 		0x81,	// Set contrast control register
-//		0x7f,	// Value: 0-255
-		0xff,	// Value: 0-255
+//		0x3f,	// Value: 0-255
+		0x7f,	// Value: 0-255
+//		0xff,	// Value: 0-255
 
 		0xA1, 	// Set segment re-map 0 to 127 (0xA0 - flipped horizontal)
 
@@ -50,7 +51,7 @@ const uint8_t oled_start_sequence[] = {
 //		0x0F,	// 4 MSB: oscillator frequency; 4 LSB: divide ratio of the display clocks
 
 		0xD9,	// Set pre-charge period
-		0x22,	// 4 MSB: Phase 2 period of up to 15 DCLK; 4 LSB: Phase 1 period of up to 15 DCLK
+		0x41,	// 4 MSB: Phase 2 period of up to 15 DCLK; 4 LSB: Phase 1 period of up to 15 DCLK
 
 		0xDA, //--set com pins hardware configuration
 		0x12,
@@ -68,6 +69,9 @@ uint8_t oled_transfer_in_progress = 0;
 void* oled_dma_data_ptr;
 uint32_t oled_dma_data_size;
 uint8_t oled_dma_circular = 0;
+
+uint8_t volatile oled_free_buffer = 1;
+uint8_t volatile oled_request_flip = 0;
 
 uint8_t oled_dma_token;
 uint8_t oled_dma_tc;
@@ -88,7 +92,7 @@ void oled_init(void) {
 	RCC_APB1PeriphResetCmd(RCC_APB1Periph_I2C1, ENABLE);
 	RCC_APB1PeriphResetCmd(RCC_APB1Periph_I2C1, DISABLE);
 
-	I2C_InitStruct.I2C_ClockSpeed = 1330000;	// 400000;
+	I2C_InitStruct.I2C_ClockSpeed = 898890;	// 400000;
 	I2C_InitStruct.I2C_Mode = I2C_Mode_I2C;
 	I2C_InitStruct.I2C_DutyCycle = I2C_DutyCycle_2;
 	I2C_InitStruct.I2C_OwnAddress1 = 0x00;			// don't care when master
@@ -127,7 +131,7 @@ void oled_initialize_screen(void) {
 }
 
 void oled_start_screen_transmission(void) {
-	oled_dma_tx(oled_triple_buffer, 3 * sizeof(oled_buffer_t), OLED_DATA_TOKEN, 1);
+	oled_dma_tx(&oled_triple_buffer[0], 3 * sizeof(oled_buffer_t), OLED_DATA_TOKEN, 1);
 }
 
 //void oled_update_screen(void) {
@@ -143,6 +147,32 @@ void oled_start_screen_transmission(void) {
 //		}
 //	}
 //}
+
+void spawn_dma(void) {
+	// Disable DMA before clearing interrupt flags
+	OLED_DMA_Channel->CCR = 0;	// Control register
+	// Clear interrupts
+	DMA1->IFCR |= ((uint32_t)(DMA_ISR_GIF6 | DMA_ISR_TCIF6 | DMA_ISR_HTIF6 | DMA_ISR_TEIF6));	// Interrupt flag clear register
+	// Init DMA
+	OLED_DMA_Channel->CCR = \
+			DMA_DIR_PeripheralDST | \
+			DMA_PeripheralInc_Disable | \
+			DMA_MemoryInc_Enable | \
+			DMA_PeripheralDataSize_Byte | \
+			DMA_MemoryDataSize_Byte | \
+			DMA_Priority_VeryHigh | \
+			DMA_M2M_Disable;
+	OLED_DMA_Channel->CCR |= DMA_Mode_Normal;	//oled_dma_circular ? DMA_Mode_Circular : DMA_Mode_Normal;
+	OLED_DMA_Channel->CMAR = (uint32_t) oled_dma_data_ptr;	// Memory address
+	OLED_DMA_Channel->CPAR = (uint32_t) &(I2C1->DR);	// Peripheral address
+	OLED_DMA_Channel->CNDTR = oled_dma_data_size;		// Remaining bytes
+	// Turn on DMA request
+	I2C1->CR2 |= I2C_CR2_DMAEN;
+	// Enable DMA interrupt
+	DMA_ITConfig(OLED_DMA_Channel, DMA_IT_TC, ENABLE);
+	// Turn on DMA
+	OLED_DMA_Channel->CCR |= DMA_CCR1_EN;
+}
 
 // Interrupt handlers
 
@@ -163,29 +193,7 @@ void I2C1_EV_IRQHandler(void) {
 		else {
 			// Disable I2C interrupt
 			I2C_ITConfig(I2C1, I2C_IT_EVT, DISABLE);
-			// Disable DMA before clearing interrupt flags
-			OLED_DMA_Channel->CCR = 0;	// Control register
-			// Clear interrupts
-			DMA1->IFCR |= ((uint32_t)(DMA_ISR_GIF6 | DMA_ISR_TCIF6 | DMA_ISR_HTIF6 | DMA_ISR_TEIF6));	// Interrupt flag clear register
-			// Init DMA
-			OLED_DMA_Channel->CCR = \
-					DMA_DIR_PeripheralDST | \
-					DMA_PeripheralInc_Disable | \
-					DMA_MemoryInc_Enable | \
-					DMA_PeripheralDataSize_Byte | \
-					DMA_MemoryDataSize_Byte | \
-					DMA_Priority_VeryHigh | \
-					DMA_M2M_Disable;
-			OLED_DMA_Channel->CCR |= oled_dma_circular ? DMA_Mode_Circular : DMA_Mode_Normal;
-			OLED_DMA_Channel->CMAR = (uint32_t) oled_dma_data_ptr;	// Memory address
-			OLED_DMA_Channel->CPAR = (uint32_t) &(I2C1->DR);	// Peripheral address
-			OLED_DMA_Channel->CNDTR = oled_dma_data_size;		// Remaining bytes
-			// Turn on DMA request
-			I2C1->CR2 |= I2C_CR2_DMAEN;
-			// Enable DMA interrupt
-			DMA_ITConfig(OLED_DMA_Channel, DMA_IT_TC, ENABLE);
-			// Turn on DMA
-			OLED_DMA_Channel->CCR |= DMA_CCR1_EN;
+			spawn_dma();
 		}
 		break;
 	}
@@ -194,7 +202,16 @@ void I2C1_EV_IRQHandler(void) {
 void DMA1_Channel6_IRQHandler(void) {
 	if (DMA_GetITStatus(DMA1_IT_TC6)) {
 		DMA_ClearITPendingBit(DMA1_IT_TC6);
-		if (!oled_dma_circular) {
+		if (oled_dma_circular) {
+			if (oled_request_flip) {
+				oled_dma_data_ptr = &oled_triple_buffer[oled_free_buffer];
+				oled_free_buffer ^= 1;
+				oled_request_flip = 0;
+			}
+			spawn_dma();
+
+		}
+		else {
 			oled_dma_token = OLED_TOKEN_TC_FLAG;
 			I2C_ITConfig(I2C1, I2C_IT_EVT, ENABLE);
 			DMA_ITConfig(OLED_DMA_Channel, DMA_IT_TC, DISABLE);

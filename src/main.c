@@ -76,8 +76,9 @@ int main(void)
 	int dragonx = 0;
 	int dragondx = 1;
 
+	gfx_set_clear_color(COLOR_DARKGRAY);
 	while(1) {
-		led_set(0, (cntr / 30) & 1);
+//		led_set(0, (cntr / 30) & 1);
 
 		if (btn_get(1)) {
 			gfx_set_clear_color(COLOR_WHITE);
