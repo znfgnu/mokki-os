@@ -47,7 +47,8 @@ const uint8_t oled_start_sequence[] = {
 		0x00,	// 0 to 63
 
 		0xD5,	// Set display clock divide ratio / oscillator frequency
-		0xF0,	// 4 MSB: oscillator frequency; 4 LSB: divide ratio of the display clocks
+//		0xD0,	// TEST1	// 4 MSB: oscillator frequency; 4 LSB: divide ratio of the display clocks
+		0xF0,	// TEST0	// 4 MSB: oscillator frequency; 4 LSB: divide ratio of the display clocks
 //		0x0F,	// 4 MSB: oscillator frequency; 4 LSB: divide ratio of the display clocks
 
 		0xD9,	// Set pre-charge period
@@ -92,7 +93,8 @@ void oled_init(void) {
 	RCC_APB1PeriphResetCmd(RCC_APB1Periph_I2C1, ENABLE);
 	RCC_APB1PeriphResetCmd(RCC_APB1Periph_I2C1, DISABLE);
 
-	I2C_InitStruct.I2C_ClockSpeed = 898890;	// 400000;
+//	I2C_InitStruct.I2C_ClockSpeed = 943000;	// TEST1
+	I2C_InitStruct.I2C_ClockSpeed = 898890;	// TEST0
 	I2C_InitStruct.I2C_Mode = I2C_Mode_I2C;
 	I2C_InitStruct.I2C_DutyCycle = I2C_DutyCycle_2;
 	I2C_InitStruct.I2C_OwnAddress1 = 0x00;			// don't care when master
@@ -133,20 +135,6 @@ void oled_initialize_screen(void) {
 void oled_start_screen_transmission(void) {
 	oled_dma_tx(&oled_triple_buffer[0], 3 * sizeof(oled_buffer_t), OLED_DATA_TOKEN, 1);
 }
-
-//void oled_update_screen(void) {
-//	oled_dma_tx(oled_buffer_tx, 1024, OLED_DATA_TOKEN);
-//	// Swap buffers.
-//	oled_buffer_tx = (oled_buffer_tx == oled_buffers[0]) ? oled_buffers[1] : oled_buffers[0];
-//}
-
-//void oled_clear_buffer(void) {
-//	for (int i = 0; i < OLED_PAGES; ++i) {
-//		for (int j = 0; j < OLED_WIDTH; ++j) {
-//			oled_buffer_tx[i][j] = 0x00;
-//		}
-//	}
-//}
 
 void spawn_dma(void) {
 	// Disable DMA before clearing interrupt flags
