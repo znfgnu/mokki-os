@@ -13,6 +13,7 @@
 #include "stm32f10x.h"
 
 #include "hw/btn.h"
+#include "hw/clock.h"
 #include "hw/debug.h"
 #include "hw/dma.h"
 #include "hw/led.h"

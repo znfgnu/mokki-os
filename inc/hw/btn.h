@@ -8,6 +8,8 @@
 #ifndef HW_BTN_H_
 #define HW_BTN_H_
 
+#include "stm32f10x.h"
+
 void btn_init(void);
 uint32_t btn_get(uint32_t btn_id);
 

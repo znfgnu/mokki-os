@@ -5,12 +5,20 @@
  *      Author: konrad
  */
 
+#include "hw/btn.h"
+#include "hw/debug.h"
+#include "hw/dma.h"
 #include "hw/led.h"
+#include "hw/oled.h"
+#include "hw/time.h"
+
 #include "gfx/gfx.h"
 
-extern const uint16_t dragon[8][64];
-extern const uint16_t dragon2[8][64];
+extern const sprite_t dragon;
+extern const sprite_t character;
+extern const sprite_t dragon2;
 extern const uint16_t concept[8][128];
+
 
 void run_test(void) {
 	int cntr = 0;
@@ -22,6 +30,9 @@ void run_test(void) {
 
 	int dragonx = 0;
 	int dragondx = 1;
+
+	int lierox = 0;
+	int lieroy = 0;
 
 	gfx_set_clear_color(COLOR_DARKGRAY);
 	while(1) {
@@ -45,17 +56,9 @@ void run_test(void) {
 		if (d1 || d2) {
 			// Blit moving dragon
 			if (d1) {
-				for (int p = 0; p<8; ++p) {
-					for (int c = 0; c<64; ++c) {
-						gfx_buffer[p][c+dragonx] = dragon[p][c];
-					}
-				}
+				gfx_blit(&dragon, dragonx, dragonx);
 			} else if (d2) {
-				for (int p = 0; p<8; ++p) {
-					for (int c = 0; c<64; ++c) {
-						gfx_buffer[p][c+dragonx] = dragon2[p][c];
-					}
-				}
+				gfx_blit(&dragon2, dragonx, 0);
 			}
 
 			if (btn_get(7)) {
@@ -112,11 +115,25 @@ void run_test(void) {
 						gfx_buffer[p][c] = concept[p][c];
 					}
 				}
+
+
 			}
 
 			if (btn_get(7)) {
 				font_print_string(10, 28, "Hello, World!", COLOR_WHITE);
 			}
+
+			if (btn_get(1)) {
+				lieroy--;
+			} else if (btn_get(2)) {
+				lierox--;
+			} else if (btn_get(3)) {
+				lierox++;
+			} else if (btn_get(4)) {
+				lieroy++;
+			}
+			gfx_blit(&character, lierox, lieroy);
+
 		}
 
 		++cntr;
