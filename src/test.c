@@ -137,6 +137,8 @@ void run_test(void) {
 		}
 
 		++cntr;
+		gfx_clear();
+
 		gfx_update();
 	}
 }

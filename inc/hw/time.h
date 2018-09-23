@@ -8,13 +8,11 @@
 #ifndef OS_TIME_H_
 #define OS_TIME_H_
 
-typedef struct {
-	uint32_t seconds;
-	uint16_t millis;
-} time_t;
+#include "stm32f10x.h"
 
-extern time_t time_now;
+extern uint32_t time_now;
 
 void time_init(void);
+void time_delay(int ms);
 
 #endif /* OS_TIME_H_ */

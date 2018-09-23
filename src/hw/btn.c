@@ -57,3 +57,12 @@ uint32_t btn_get(uint32_t btn_id) {
 	return res ? 0 : 1;
 }
 
+uint8_t btn_get_all(void) {
+	uint8_t res = 0x00;
+	for (int i=0; i<8; ++i) {
+		res <<= 1;
+		res |= btn_gpio[7-i]->IDR & btn_pin[7-i] ? 0 : 1;
+	}
+	return res;
+}
+

@@ -8,11 +8,14 @@
 #include "stm32f10x.h"
 #include "hw/led.h"
 #include "hw/btn.h"
+#include "hw/time.h"
 
 const void* api_fn_pointers[] = {
 		(void*) 0,			// 0x00
 		(void*) led_set,	// 0x01
 		(void*) btn_get,	// 0x02
+		(void*) led_set_rgb,	// 0x03
+		(void*) time_delay,	// 0x04
 };
 
 void api_init(void) {

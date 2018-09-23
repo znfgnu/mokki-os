@@ -48,6 +48,7 @@ int main(void)
 	oled_start_screen_transmission();
 
 	run_test();
+//	gui_start();
 
 	for(;;);
 }

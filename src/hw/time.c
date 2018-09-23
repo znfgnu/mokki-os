@@ -8,16 +8,17 @@
 #include "stm32f10x.h"
 #include "hw/time.h"
 
-time_t time_now;
+uint32_t time_now;
 
 void time_init(void) {
 	SysTick_Config(SystemCoreClock/1000);
 }
 
+void time_delay(int ms) {
+	ms += time_now;
+	while(time_now < ms);
+}
+
 void SysTick_Handler(void) {
-	++time_now.millis;
-	if (time_now.millis == 1000) {
-		++time_now.seconds;
-		time_now.millis = 0;
-	}
+	++time_now;
 }

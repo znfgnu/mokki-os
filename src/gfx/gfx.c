@@ -52,6 +52,8 @@ void gfx_set_clear_color(int color) {
 }
 
 void gfx_set_pixel(int x, int y, int color) {
+	if (x & ~(0x7F)) return;
+	if (y & ~(0x3F)) return;
 	int page = y >> 3;
 	y &= 0b111;	// modulo 8
 	y <<= 1;
