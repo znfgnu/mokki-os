@@ -93,8 +93,8 @@ void oled_init(void) {
 	RCC_APB1PeriphResetCmd(RCC_APB1Periph_I2C1, ENABLE);
 	RCC_APB1PeriphResetCmd(RCC_APB1Periph_I2C1, DISABLE);
 
-//	I2C_InitStruct.I2C_ClockSpeed = 943000;	// TEST1
-	I2C_InitStruct.I2C_ClockSpeed = 898890;	// TEST0
+	I2C_InitStruct.I2C_ClockSpeed = 943000;	// TEST1
+//	I2C_InitStruct.I2C_ClockSpeed = 898890;	// TEST0
 	I2C_InitStruct.I2C_Mode = I2C_Mode_I2C;
 	I2C_InitStruct.I2C_DutyCycle = I2C_DutyCycle_2;
 	I2C_InitStruct.I2C_OwnAddress1 = 0x00;			// don't care when master

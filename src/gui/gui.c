@@ -14,6 +14,9 @@
 #define NEXTMOD(a, m)	((a)+1==(m) ? 0 : (a)+1)
 #define PREVMOD(a, m)	((a)==0 ? (m)-1 : (a)-1)
 
+#define MAX(a,b)		((a)>(b)?(a):(b))
+#define MIN(a,b)		((a)<(b)?(a):(b))
+
 uint16_t breath_program[] = {
 		// Program code
 		0xe01e,
@@ -82,6 +85,8 @@ program_t launcher;
 int run_program(void) {
 	loader_init_fntable((program_struct_t*) breath_program);
 	program_t program = loader_get_launcher((program_struct_t*) breath_program);
+	gfx_clear();
+	gfx_update();
 	int ret = program(0, 0);
 	return ret;
 }
@@ -92,30 +97,20 @@ int nothing(void) {
 
 static const char* entries[] = {
 		"Run program",
-		"Settings",
-		"Debug info",
-		"Device info",
 		"About",
 };
 
 static function_t actions[] = {
 		&run_program,
 		&nothing,
-		&nothing,
-		&nothing,
-		&nothing,
 };
 
 static const char* entries_helptext[] = {
 		"Runs program stored in RAM.",
-		"Nothing, for now.",
-		"Some kind of log.",
-		"Serial number, software version.",
 		"Visit https://mokki.org/"
 };
 
-static uint8_t appsno = sizeof(entries)
-		/ sizeof(entries[0]);
+static uint8_t appsno = sizeof(entries) / sizeof(entries[0]);
 
 static uint8_t chosenno = 0;
 
@@ -155,8 +150,7 @@ void gui_start(void) {
 			lastchange = millis_now;
 		}
 		if (pressed & BTN_A) {
-			run_program();
-//			actions[chosenno]();
+			actions[chosenno]();
 		}
 		if (millis_now/1000 != millis_last/1000) {
 			fps = fps_cntr;
@@ -190,16 +184,25 @@ void gui_start(void) {
 			}
 		}
 
+		sprintf(buf, " Total: %d b", raminfo_total());
+		font_print_string(1, 3*8, buf, COLOR_DARKGRAY);
+		sprintf(buf, "Static: %d b", raminfo_static());
+		font_print_string(1, 4*8, buf, COLOR_DARKGRAY);
+		sprintf(buf, " Stack: %d b", raminfo_stack());
+		font_print_string(1, 5*8, buf, COLOR_DARKGRAY);
+		sprintf(buf, "  Free: %d b", raminfo_free());
+		font_print_string(1, 6*8, buf, COLOR_DARKGRAY);
+
 		for (int i=0; i<8; ++i) {
 			int col = btn & (1<<i) ? COLOR_WHITE : COLOR_DARKGRAY;
-			font_blit_char(OLED_WIDTH-48+i*6, 56, '0'+i, col);
+			font_blit_char(OLED_WIDTH-48+i*6, 7*8, '0'+i, col);
 		}
 
 		sprintf(buf, "%d FPS:%d", millis_now/1000, fps);
-		font_print_string(1, 56, buf, COLOR_DARKGRAY);
+		font_print_string(1, 7*8, buf, COLOR_DARKGRAY);
 
 //		gfx_fill_rect...
-		font_print_string(helptext_offset, 48, entries_helptext[chosenno], COLOR_LIGHTGRAY);
+		font_print_string(helptext_offset, 2*8, entries_helptext[chosenno], COLOR_LIGHTGRAY);
 
 		gfx_update();
 	}
