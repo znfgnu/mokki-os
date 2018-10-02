@@ -82,9 +82,11 @@ uint16_t breath_program[] = {
 typedef int (*function_t)(void);
 program_t launcher;
 
+extern char _ebss;
+
 int run_program(void) {
-	loader_init_fntable((program_struct_t*) breath_program);
-	program_t program = loader_get_launcher((program_struct_t*) breath_program);
+	loader_init_fntable((program_struct_t*) (&_ebss));
+	program_t program = loader_get_launcher((program_struct_t*) (&_ebss));
 	gfx_clear();
 	gfx_update();
 	int ret = program(0, 0);

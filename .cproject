@@ -17,8 +17,8 @@
 				<configuration artifactExtension="elf" artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" cleanCommand="rm -rf" description="" id="fr.ac6.managedbuild.config.gnu.cross.exe.debug.553465738" name="Debug" parent="fr.ac6.managedbuild.config.gnu.cross.exe.debug" postannouncebuildStep="Generating binary and Printing size information:" postbuildStep="arm-none-eabi-objcopy -O binary &quot;${BuildArtifactFileBaseName}.elf&quot; &quot;${BuildArtifactFileBaseName}.bin&quot;; arm-none-eabi-size &quot;${BuildArtifactFileName}&quot;">
 					<folderInfo id="fr.ac6.managedbuild.config.gnu.cross.exe.debug.553465738." name="/" resourcePath="">
 						<toolChain id="fr.ac6.managedbuild.toolchain.gnu.cross.exe.debug.1044609638" name="Ac6 STM32 MCU GCC" superClass="fr.ac6.managedbuild.toolchain.gnu.cross.exe.debug">
-							<option id="fr.ac6.managedbuild.option.gnu.cross.mcu.1167588485" name="Mcu" superClass="fr.ac6.managedbuild.option.gnu.cross.mcu" value="STM32F103RCTx" valueType="string"/>
-							<option id="fr.ac6.managedbuild.option.gnu.cross.board.43321716" name="Board" superClass="fr.ac6.managedbuild.option.gnu.cross.board" value="stm32f103rct6" valueType="string"/>
+							<option id="fr.ac6.managedbuild.option.gnu.cross.mcu.1167588485" name="Mcu" superClass="fr.ac6.managedbuild.option.gnu.cross.mcu" useByScannerDiscovery="false" value="STM32F103RCTx" valueType="string"/>
+							<option id="fr.ac6.managedbuild.option.gnu.cross.board.43321716" name="Board" superClass="fr.ac6.managedbuild.option.gnu.cross.board" useByScannerDiscovery="false" value="stm32f103rct6" valueType="string"/>
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="fr.ac6.managedbuild.targetPlatform.gnu.cross.1161639007" isAbstract="false" osList="all" superClass="fr.ac6.managedbuild.targetPlatform.gnu.cross"/>
 							<builder buildPath="${workspace_loc:/mokki-os}/Debug" id="fr.ac6.managedbuild.builder.gnu.cross.967255493" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="fr.ac6.managedbuild.builder.gnu.cross"/>
 							<tool id="fr.ac6.managedbuild.tool.gnu.cross.c.compiler.1663784224" name="MCU GCC Compiler" superClass="fr.ac6.managedbuild.tool.gnu.cross.c.compiler">
@@ -38,8 +38,10 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/CMSIS/device&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/CMSIS/core&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/USB/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/STM32-USBFS/inc&quot;"/>
 								</option>
-								<option id="gnu.c.compiler.option.dialect.std.1907046153" superClass="gnu.c.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.c.compiler.dialect.default" valueType="enumerated"/>
+								<option id="gnu.c.compiler.option.dialect.std.1907046153" name="Language standard" superClass="gnu.c.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.c.compiler.dialect.default" valueType="enumerated"/>
 								<inputType id="fr.ac6.managedbuild.tool.gnu.cross.c.compiler.input.c.1449810199" superClass="fr.ac6.managedbuild.tool.gnu.cross.c.compiler.input.c"/>
 								<inputType id="fr.ac6.managedbuild.tool.gnu.cross.c.compiler.input.s.216630176" superClass="fr.ac6.managedbuild.tool.gnu.cross.c.compiler.input.s"/>
 							</tool>
@@ -48,6 +50,7 @@
 								<option id="gnu.cpp.compiler.option.debugging.level.452933357" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 							</tool>
 							<tool id="fr.ac6.managedbuild.tool.gnu.cross.c.linker.1296142743" name="MCU GCC Linker" superClass="fr.ac6.managedbuild.tool.gnu.cross.c.linker">
+								<option id="gnu.c.link.option.ldflags.389054784" superClass="gnu.c.link.option.ldflags" useByScannerDiscovery="false" value="--specs=nano.specs" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.c.linker.input.189755134" superClass="cdt.managedbuild.tool.gnu.c.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
@@ -56,7 +59,7 @@
 							<tool id="fr.ac6.managedbuild.tool.gnu.cross.cpp.linker.1558746171" name="MCU G++ Linker" superClass="fr.ac6.managedbuild.tool.gnu.cross.cpp.linker"/>
 							<tool id="fr.ac6.managedbuild.tool.gnu.archiver.182364491" name="MCU GCC Archiver" superClass="fr.ac6.managedbuild.tool.gnu.archiver"/>
 							<tool id="fr.ac6.managedbuild.tool.gnu.cross.assembler.1003916389" name="MCU GCC Assembler" superClass="fr.ac6.managedbuild.tool.gnu.cross.assembler">
-								<option id="gnu.both.asm.option.include.paths.1394139960" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
+								<option id="gnu.both.asm.option.include.paths.1394139960" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/StdPeriph_Driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/CMSIS/device&quot;"/>
@@ -67,9 +70,30 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<folderInfo id="fr.ac6.managedbuild.config.gnu.cross.exe.debug.553465738.1025940779" name="/" resourcePath="STM32-USBFS">
+						<toolChain id="fr.ac6.managedbuild.toolchain.gnu.cross.exe.debug.709510139" name="Ac6 STM32 MCU GCC" superClass="fr.ac6.managedbuild.toolchain.gnu.cross.exe.debug" unusedChildren="">
+							<option id="fr.ac6.managedbuild.option.gnu.cross.mcu.1167588485.1142075579" name="Mcu" superClass="fr.ac6.managedbuild.option.gnu.cross.mcu.1167588485"/>
+							<option id="fr.ac6.managedbuild.option.gnu.cross.board.43321716.819411775" name="Board" superClass="fr.ac6.managedbuild.option.gnu.cross.board.43321716"/>
+							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="fr.ac6.managedbuild.targetPlatform.gnu.cross" isAbstract="false" osList="all" superClass="fr.ac6.managedbuild.targetPlatform.gnu.cross"/>
+							<tool id="fr.ac6.managedbuild.tool.gnu.cross.c.compiler.933494245" name="MCU GCC Compiler" superClass="fr.ac6.managedbuild.tool.gnu.cross.c.compiler.1663784224">
+								<inputType id="fr.ac6.managedbuild.tool.gnu.cross.c.compiler.input.c.783306909" superClass="fr.ac6.managedbuild.tool.gnu.cross.c.compiler.input.c"/>
+								<inputType id="fr.ac6.managedbuild.tool.gnu.cross.c.compiler.input.s.1529513162" superClass="fr.ac6.managedbuild.tool.gnu.cross.c.compiler.input.s"/>
+							</tool>
+							<tool id="fr.ac6.managedbuild.tool.gnu.cross.cpp.compiler.1823796044" name="MCU G++ Compiler" superClass="fr.ac6.managedbuild.tool.gnu.cross.cpp.compiler.1729969274"/>
+							<tool id="fr.ac6.managedbuild.tool.gnu.cross.c.linker.1259003956" name="MCU GCC Linker" superClass="fr.ac6.managedbuild.tool.gnu.cross.c.linker.1296142743"/>
+							<tool id="fr.ac6.managedbuild.tool.gnu.cross.cpp.linker.1118586463" name="MCU G++ Linker" superClass="fr.ac6.managedbuild.tool.gnu.cross.cpp.linker.1558746171"/>
+							<tool id="fr.ac6.managedbuild.tool.gnu.archiver.438897184" name="MCU GCC Archiver" superClass="fr.ac6.managedbuild.tool.gnu.archiver.182364491"/>
+							<tool id="fr.ac6.managedbuild.tool.gnu.cross.assembler.819735068" name="MCU GCC Assembler" superClass="fr.ac6.managedbuild.tool.gnu.cross.assembler.1003916389">
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.330300709" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+								<inputType id="fr.ac6.managedbuild.tool.gnu.cross.assembler.input.1459062914" superClass="fr.ac6.managedbuild.tool.gnu.cross.assembler.input"/>
+							</tool>
+						</toolChain>
+					</folderInfo>
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="CMSIS"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="STM32-USBFS"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="StdPeriph_Driver"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="USB"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="inc"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="startup"/>
