@@ -75,7 +75,14 @@ uint16_t MAL_Write(uint8_t lun, uint32_t Memory_Offset, uint32_t *Writebuff, uin
 
   if (lun != 0) return MAL_FAIL;
 
-  if (Memory_Offset >= 551) {
+  if (Memory_Offset > 600) return MAL_OK;
+  if (Memory_Offset >= 559) {
+	  Memory_Offset -= 559;
+	  for (int i=0; i<512; ++i) {
+		  ((char*)(&_ebss))[Memory_Offset*512+i] = c[i];
+	  }
+  }
+  else if (Memory_Offset >= 551) {
 	  Memory_Offset -= 551;
 	  for (int i=0; i<512; ++i) {
 		  ((char*)(&_ebss))[Memory_Offset*512+i] = c[i];

@@ -45,14 +45,14 @@
 
 const uint8_t BootSector[] = {
 	0xEB, 0x3C, 0x90,					// code to jump to the bootstrap code
-	'm', 'k', 'd', 'o', 's', 'f', 's', 0x00,		// OEM ID
+	'M', 'S', 'W', 'I', 'N', '4', '.', '1',		// OEM ID
 	WBVAL(BYTES_PER_SECTOR),				// bytes per sector
 	SECTORS_PER_CLUSTER,					// sectors per cluster
 	WBVAL(RESERVED_SECTORS),				// # of reserved sectors (1 boot sector)
 	FAT_COPIES,						// FAT copies (2)
 	WBVAL(ROOT_ENTRIES),					// root entries (512)
 	WBVAL(SECTOR_COUNT),					// total number of sectors
-	0xF8,							// media descriptor (0xF8 = Fixed disk)
+	0xF0,							// media descriptor (0xF8 = Fixed disk)
 	0x01, 0x00,						// sectors per FAT (1)
 	0x20, 0x00,						// sectors per track (32)
 	0x40, 0x00,						// number of heads (64)
@@ -102,8 +102,8 @@ uint8_t DirSector[] = {
 	0x00, 0x00,								// first cluster
 	WBVAL(0), WBVAL(0),							// two name characters in UTF-16
 	// actual entry
-	'M', 'O', 'K', 'K', 'I', 'I', ' ', 'H',					// filename
-	'T', 'M', 'L',								// extension
+	'M', 'O', 'K', 'K', 'I', ' ', ' ', ' ',					// filename
+	'H', 'T', 'M',								// extension
 	0x20,									// attribute byte
 	0x00,									// reserved for Windows NT
 	0x00,									// creation millisecond
