@@ -109,7 +109,7 @@ static function_t actions[] = {
 
 static const char* entries_helptext[] = {
 		"Runs program stored in RAM.",
-		"Visit https://mokki.org/"
+		__DATE__,
 };
 
 static uint8_t appsno = sizeof(entries) / sizeof(entries[0]);
