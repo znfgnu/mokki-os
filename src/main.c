@@ -28,6 +28,27 @@
 
 #include "test.h"
 
+// USB
+#include "stm32f10x.h"
+#include "stm32f10x_rcc.h"
+#include "misc.h"
+
+#include "usb_lib.h"
+#include "hw_config.h"
+#include "usb_pwr.h"
+
+int usbinit(void)
+{
+	Set_System();
+	Set_USBClock();
+	USB_Interrupts_Config();
+	USB_Init();
+
+	//while (bDeviceState != CONFIGURED);
+}
+
+// /USB
+
 int main(void)
 {
 	// Hardware init
@@ -38,6 +59,7 @@ int main(void)
 	led_init();
 	oled_init();
 	time_init();
+	bt_init();
 
 	// System init
 	api_init();
@@ -47,9 +69,12 @@ int main(void)
 	oled_initialize_screen();
 	oled_start_screen_transmission();
 
+	usbinit();
+
 	if (btn_get(7)) {
 		run_test();
 	} else {
+//		bt_test();
 		gui_start();
 	}
 

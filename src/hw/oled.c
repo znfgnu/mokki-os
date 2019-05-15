@@ -77,6 +77,8 @@ uint8_t volatile oled_request_flip = 0;
 uint8_t oled_dma_token;
 uint8_t oled_dma_tc;
 
+extern uint8_t rebootRequested;
+
 void oled_init(void) {
 	GPIO_InitTypeDef GPIO_InitStruct;
 	I2C_InitTypeDef I2C_InitStruct;
@@ -190,6 +192,11 @@ void I2C1_EV_IRQHandler(void) {
 void DMA1_Channel6_IRQHandler(void) {
 	if (DMA_GetITStatus(DMA1_IT_TC6)) {
 		DMA_ClearITPendingBit(DMA1_IT_TC6);
+		if (rebootRequested) {
+			oled_transfer_in_progress = 0;
+			return;
+		}
+
 		if (oled_dma_circular) {
 			if (oled_request_flip) {
 				oled_dma_data_ptr = &oled_triple_buffer[oled_free_buffer];
