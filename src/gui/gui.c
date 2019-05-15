@@ -6,6 +6,7 @@
  */
 
 #include "gfx/gfx.h"
+#include "hw/bt.h"
 #include "hw/btn.h"
 #include "hw/time.h"
 #include "os/program_struct.h"
@@ -116,9 +117,19 @@ static uint8_t appsno = sizeof(entries) / sizeof(entries[0]);
 
 static uint8_t chosenno = 0;
 
+uint8_t externalRun = 0;
+
 static char buf[100];
 
 void gui_start(void) {
+	bt_sendmsg("AT+RST");
+	bt_recvmsg(buf);
+	for(int i=0; i<5000000; ++i);
+	bt_sendmsg("AT+NAMEMokki-dev");
+	bt_recvmsg(buf);
+	bt_mode(BTMODE_DATA);
+
+
 	gfx_set_clear_color(COLOR_BLACK);
 	uint8_t last_btn = btn_get_all();
 	uint8_t btn = last_btn;
@@ -157,6 +168,10 @@ void gui_start(void) {
 		if (millis_now/1000 != millis_last/1000) {
 			fps = fps_cntr;
 			fps_cntr = 0;
+		}
+
+		if (externalRun) {
+			run_program();
 		}
 
 		int8_t bulletpos = cntr & 0xF;
@@ -202,6 +217,11 @@ void gui_start(void) {
 
 		sprintf(buf, "%d FPS:%d", millis_now/1000, fps);
 		font_print_string(1, 7*8, buf, COLOR_DARKGRAY);
+//		bt_sendmsg(buf);
+//		debug_tx(buf);
+		gfx_set_pixel(
+				127, 63,
+				GPIO_ReadInputDataBit(STAT_PORT, STAT_PIN) ? COLOR_WHITE : COLOR_BLACK);
 
 //		gfx_fill_rect...
 		font_print_string(helptext_offset, 2*8, entries_helptext[chosenno], COLOR_LIGHTGRAY);

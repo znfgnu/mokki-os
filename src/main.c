@@ -59,6 +59,7 @@ int main(void)
 	led_init();
 	oled_init();
 	time_init();
+	bt_init();
 
 	// System init
 	api_init();
@@ -73,6 +74,7 @@ int main(void)
 	if (btn_get(7)) {
 		run_test();
 	} else {
+//		bt_test();
 		gui_start();
 	}
 
